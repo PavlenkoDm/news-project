@@ -61,8 +61,6 @@ window.addEventListener('resize', () => {
     window.innerWidth < 768 ? mediaQuantity.mobile : mediaQuantity.tablet;
 });
 
-console.log(`1`);
-
 //Популярный запрос
 async function getPopularArticles() {
   try {

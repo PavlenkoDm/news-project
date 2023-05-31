@@ -1,6 +1,8 @@
 import { onGetLocaleStorageData, refs } from './refs';
 
 refs.newsGallery.addEventListener('click', onReadMoreClick);
+
+
 //============== Функция обработчик по клику на ссылку ReadMore ==============================================
 function onReadMoreClick(event) {
   if (!event.target.classList.contains('markup-unit__global-link')) return; // проверяем туда ли тырнули
@@ -22,9 +24,9 @@ function onReadMoreClick(event) {
   );
 }
 
-//================================= Логика страницы Index, действие с Фавориты ============================================================
 
-let favorites = [];
+
+//================================= Логика страницы Index, действие с Фавориты ============================================================
 
 refs.newsGallery.addEventListener('click', onAddRemoveLocaleStorageData); // вешаем слушателя событий на контейнер с новостями
 
@@ -35,74 +37,24 @@ function onAddRemoveLocaleStorageData(event) {
   const parsedCardData = makeParseJson(event.target.dataset.favorite); // получаем объект данных с карточки которая находится на странице
   const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY); // получаем массив объектов из Локального Хранилища
 
-  if (event.target.classList.contains('js-favorites')) {
-    // проверка условия содержит ли кнопка класс-метку что новость уже добавлена в избранное
-
-    event.target.firstElementChild.textContent = 'Add to favorites'; // изменение текстового контента кнопки
-    // event.target.firstElementChild.setAttribute(
-    //   'style',
-    //   'pointer-events: none'
-    // );
-    // event.target.lastElementChild.setAttribute('style', 'pointer-events: none');
-    event.target.lastElementChild.classList.toggle('heart-fav');
-    event.target.classList.toggle('btn-favourites');
-
-    event.target.classList.remove('js-favorites'); // убираем класс-метку что карточка добавлена в избранное
-
-    if (!dataFromLocaleStorage) {
-      // проверка на null из пустого Локального Хранилища
-      console.log("News isn't in favorites");
-      return;
-    }
-
-    const index = dataFromLocaleStorage.find((card, index) => {
-      // получаем индекс нужной карточки
-      if (card.link === parsedCardData.link) {
-        return index;
-      }
-    });
-
-    dataFromLocaleStorage.splice(index, 1); // удаляем карточку по индексу
-
-    if (dataFromLocaleStorage.length === 0) {
-      // проверяем пустой массив или нет
-      localStorage.removeItem('FAVORITES');
-      return;
-    }
-
-    onSetLocaleStorageData(refs.FAVORITES_KEY, dataFromLocaleStorage); // сетаем в локальное хранилище модифицированный массив
-
-    return;
+  if (!dataFromLocaleStorage) {
+    onSetLocaleStorageData(refs.FAVORITES_KEY, [parsedCardData]);
+    changeButton(event.target, 'add');
   }
 
-  //В противном случае==========//
-  event.target.textContent = 'Remove from favorites';
-  // event.target.firstElementChild.setAttribute('style', 'pointer-events: none');
-  // event.target.lastElementChild.setAttribute('style', 'pointer-events: none'); // изменение текстового контента кнопки
-  // event.target.lastElementChild.classList.remove('heart-fav');
-
-  event.target.classList.add('js-favorites'); // добавляем класс-метку что карточка добавлена в избранное
-
-  if (dataFromLocaleStorage) {
-    // проверка на возврат null из пустого массива
-    const findPresenceResult = dataFromLocaleStorage.some(
-      card => card.link === parsedCardData.link
-    ); // получаем булевое значение есть ли новость в избранном
-
-    if (findPresenceResult) {
-      // делаем условие новости на присутствие в Локальном Хранилище в избранном
-      console.log("It's allredy in Favorites");
-      return;
-    }
-
-    favorites = [...dataFromLocaleStorage]; // распыляем в массив "Фавориты" данные из массива полученные из Локального хранилища
+  if (!dataFromLocaleStorage.some(news => news.link === parsedCardData.link)) {
+    onSetLocaleStorageData(refs.FAVORITES_KEY, [
+      ...dataFromLocaleStorage,
+      parsedCardData,
+    ]);
+    changeButton(event.target, 'add');
+  } else {
+    onSetLocaleStorageData(
+      refs.FAVORITES_KEY,
+      dataFromLocaleStorage.filter(news => news.link !== parsedCardData.link)
+    );
+    changeButton(event.target, 'remove');
   }
-
-  favorites.push(parsedCardData); // добавляем объект с данными карточки новости в массив "Фавориты"
-
-  onSetLocaleStorageData(refs.FAVORITES_KEY, favorites); // сетаем в локальное хранилище
-
-  favorites = []; // очищаем массив "Фавориты"
 }
 
 //========== Функция парсинга данных из JSON файла =================================================
@@ -215,4 +167,26 @@ function addHaveReadNews(newsArr, cardObj, date, key) {
   haveReadArray.push(whenHaveReadObject); // пушим в новый массив объект с датой и массивом прочитанных новостей
 
   onSetLocaleStorageData(key, haveReadArray); // сетаем массив с прочитанными новостями и датой в Локальное Хранилище
+}
+
+function changeButton(eTarget, action) {
+  if (action === 'add') {
+    eTarget.firstElementChild.textContent = 'Remove from Favourites';
+    eTarget.firstElementChild.setAttribute('style', 'pointer-events: none');
+    eTarget.lastElementChild.classList.replace(
+      'markup-unit__favorite-icon',
+      'markup-unit__favorite-icon--active'
+    );
+    eTarget.lastElementChild.setAttribute('style', 'pointer-events: none');
+  }
+
+  if (action === 'remove') {
+    eTarget.firstElementChild.textContent = 'Add to Favourites';
+    eTarget.firstElementChild.setAttribute('style', 'pointer-events: none');
+    eTarget.lastElementChild.classList.replace(
+      'markup-unit__favorite-icon--active',
+      'markup-unit__favorite-icon'
+    );
+    eTarget.lastElementChild.setAttribute('style', 'pointer-events: none');
+  }
 }
