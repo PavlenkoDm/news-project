@@ -1,32 +1,30 @@
+import { receiveDate, addLeadingZero, makeParseJson, onSetLocaleStorageData, onReadMoreClick } from './js/home-favourites-read';
 import { refs, getNoFound, onGetLocaleStorageData } from './js/refs';
 import './js/mobile_menu';
 // import { onInputSubmit } from './js/themeSwitcher';
 // export const formEl = document.querySelector('.toggle-mode');
 // formEl.addEventListener('submit', onInputSubmit);
 
-const urlFromLocaleStorage = onGetLocaleStorageData(refs.READ_URL_KEY);
+onOpenFavorites(refs.FAVORITES_KEY);
 
-refs.favouriteGallery.addEventListener('click', onRemoveFromFavorites); // вешаем слушатель событий на галерею новостей
-
-onOpenFavorites(refs.FAVORITES_KEY); // запуск функции для рендера страницы
-
-//=============== Функция при открытии страныцы "Фавориты" ==================================
+//=============== Функция при открытии страныцы "Фавориты":
 function onOpenFavorites(key) {
-  const dataFromLocaleStorage = onGetLocaleStorageData(key); // получаем данные из избранных в Локальном Хранилище
+  const dataFromLocaleStorage = onGetLocaleStorageData(key);
+  const currentRead = onGetLocaleStorageData(refs.READ_KEY);
 
   if (!dataFromLocaleStorage || dataFromLocaleStorage.length === 0) {
-    // проверка на null или пустой массив
-    // alert(
-    //   'Добавьте страницу заглушку пожалуйста. Файл favourite.js, 19-строка'
-    // );
     getNoFound(refs.favouriteGallery);
     return;
   }
 
-  onCreateMurkup(dataFromLocaleStorage);
+  onCreateMurkup(dataFromLocaleStorage, currentRead);
 }
 
-//============= Функция-обработчик удаления из Фаворитов ==============================
+//============= Функция удаления элементов из ДОМ:
+function onRemoveElement(element) {
+  element.remove();
+}
+//============= Функция-обработчик удаления из Фаворитов:
 function onRemoveFromFavorites(event) {
   if (!event.target.hasAttribute('data-info')) return;
 
@@ -37,8 +35,6 @@ function onRemoveFromFavorites(event) {
   const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY); // получаем массив из Локального хранилища
 
   if (!dataFromLocaleStorage) {
-    // проверка на null из пустого Локального Хранилища
-
     return;
   }
 
@@ -52,8 +48,7 @@ function onRemoveFromFavorites(event) {
   dataFromLocaleStorage.splice(index, 1); // удаляем карточку по индексу
 
   if (dataFromLocaleStorage.length === 0) {
-    // проверяем пустой массив или нет
-    localStorage.removeItem('FAVORITES');
+    localStorage.removeItem(refs.FAVORITES_KEY);
     onRemoveElement(card);
     return;
   }
@@ -63,41 +58,31 @@ function onRemoveFromFavorites(event) {
   onRemoveElement(card);
 }
 
-//============= Функция для рендера страницы ===========================================
-function onCreateMurkup(arrayOfObjects) {
+//============= Функция для рендера страницы:
+function onCreateMurkup(arrayOfObjects, read) {
   const favoritesMurkup = arrayOfObjects
     .map(newsObject => {
       // перебираем массив из Локального хранилища и создаем разметку для карточки
       const { title, category, date, link, description, imageURL } = newsObject;
       const favorite = JSON.stringify(newsObject);
 
-      //Логика отображения прочитанных на странице Фавориты--------------------------------------
-      let check = 'display: none;'; // стиль по умолчанию для плашки "Already read"
-      const urlFromLocaleStorage = onGetLocaleStorageData(refs.READ_URL_KEY); // получаем массив URL прочитанных новостей
-      check = checkIfReadByUrl(urlFromLocaleStorage, link); //возвращает строку с разным свойством display
-      if (!check) {
-        // проверка на undefined
-        check = 'display: none;';
-      }
-      //---------------------------------------------------------------------
-
       return `<li class="markup-unit markup-unit__read" name="card">
     <p class="markup-unit__section">${category}</p>
-      ${
-        urlFromLocaleStorage?.find(readNews => readNews === link)
-          ? `<p class="markup-unit__already-read" style='${check}'>Already read
-      <svg class="markup-unit__icon-check" width="18" height="18" viewBox="0 0 37 32">
-        <path stroke="#00DD73" stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="4" stroke-width="2.2857" d="M28.779 6.389c-0.288 0.009-0.546 0.131-0.732 0.323l-16.313 16.313-6.713-6.713c-0.195-0.209-0.473-0.339-0.78-0.339-0.589 0-1.067 0.478-1.067 1.067 0 0.308 0.13 0.585 0.339 0.78l0.001 0.001 7.467 7.467c0.193 0.193 0.459 0.312 0.754 0.312s0.561-0.119 0.754-0.312v0l17.067-17.067c0.199-0.194 0.323-0.465 0.323-0.765 0-0.589-0.478-1.067-1.067-1.067-0.011 0-0.022 0-0.033 0l0.002-0z"></path>
-      </svg>
-      </p>`
-          : ''
-      }
     <div class="markup-unit__image-wrapper">
     <img 
         class="markup-unit__card-image" 
         src="${imageURL}" 
         alt="placeholder"
         />
+        ${read?.some(readNews => readNews.link === link)
+              ? `<p class="markup-unit__already-read">
+                  Already read
+                  <svg class="markup-unit__icon-check" width="18" height="18" viewBox="0 0 37 32">
+                    <path stroke="#00DD73" stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="4" stroke-width="2.2857" d="M28.779 6.389c-0.288 0.009-0.546 0.131-0.732 0.323l-16.313 16.313-6.713-6.713c-0.195-0.209-0.473-0.339-0.78-0.339-0.589 0-1.067 0.478-1.067 1.067 0 0.308 0.13 0.585 0.339 0.78l0.001 0.001 7.467 7.467c0.193 0.193 0.459 0.312 0.754 0.312s0.561-0.119 0.754-0.312v0l17.067-17.067c0.199-0.194 0.323-0.465 0.323-0.765 0-0.589-0.478-1.067-1.067-1.067-0.011 0-0.022 0-0.033 0l0.002-0z"></path>
+                  </svg>
+            </p>`
+              : ''
+      }
     <button 
         class="markup-unit__add-favorite js-fbutton js-favorites" 
         type="button" 
@@ -111,14 +96,20 @@ function onCreateMurkup(arrayOfObjects) {
         style="pointer-events: none;"
       >
       ${
-        urlFromLocaleStorage?.find(favouriteNews => favouriteNews === link)
-          ? 'Add to Favourite'
-          : 'Remove from Favourites'
+        arrayOfObjects?.some(favouriteNews => favouriteNews.link === link)
+          ? 'Remove from Favourites'
+          : 'Add to Favourite'
       }
       </p>
       <svg 
           data-favorite='${favorite}'  
-          class="markup-unit__favorite-icon markup-unit__favorite-icon--active js-fbutton" 
+          class="${
+            arrayOfObjects?.some(
+              favouriteNews => favouriteNews.link === link
+            )
+              ? 'markup-unit__favorite-icon--active js-fbutton'
+              : 'markup-unit__favorite-icon'
+          }" 
           width="15" 
           height="15" 
           viewBox="0 0 37 32"
@@ -134,18 +125,18 @@ function onCreateMurkup(arrayOfObjects) {
       target="_blank"
       data-favorite='${favorite}'
     >
-    <div class="markup-unit__details">
-      <div class="markup-unit__subdetails">
-       <h2 class="markup-unit__card-header" name="card_header">
+    <div class="markup-unit__details" style="pointer-events:none;">
+      <div class="markup-unit__subdetails" style="pointer-events:none;">
+       <h2 class="markup-unit__card-header" name="card_header" style="pointer-events:none;">
         ${title}
     </h2>
-    <p class="markup-unit__card-text" name="card_text">
+    <p class="markup-unit__card-text" name="card_text" style="pointer-events:none;">
         ${description}
     </p>
-        <div class="markup-unit__card-footer">
-          <p class="markup-unit__card-date">${date}</p>
+        <div class="markup-unit__card-footer" style="pointer-events:none;">
+          <p class="markup-unit__card-date" style="pointer-events:none;">${date}</p>
           <p 
-            class="markup-unit__read-more" 
+            class="markup-unit__read-more" style="pointer-events:none;"
           >
             Read more
           </p>
@@ -160,158 +151,6 @@ function onCreateMurkup(arrayOfObjects) {
   return (refs.favouriteGallery.innerHTML = favoritesMurkup);
 }
 
-//============= Функция удаления элементов из ДОМ ======================================
-function onRemoveElement(element) {
-  element.remove();
-}
 
-// Логика работы с "Прочитанными" на странице Фавориты --------------------------------------------------------------------
-
-refs.favouriteGallery.addEventListener('click', onReadMoreClick); // вешаем слушатель событий на контейнер с новостями
-
-//============== Функция обработчик по клику на ссылку ReadMore ==============================================
-function onReadMoreClick(event) {
-  //   event.preventDefault();
-  if (!event.target.classList.contains('markup-unit__read-more')) return; // проверяем туда ли тырнули
-
-  const clickDate = receiveDate(); // получаем дату клика в виде 20/02/2023
-  const parsedCardData = makeParseJson(event.target.dataset.favorite); // получаем объект данных с карточки которая находится на странице
-  // получаем из локального хранилища массив URL прочитанных новстей
-  const dataFromLocaleStorage = onGetLocaleStorageData(refs.READ_KEY); // получаем массив объектов прочитанных новостей из Локального Хранилища
-
-  //------ Логика для массива ссылок прочитаных новостей
-  addHaveReadLink(urlFromLocaleStorage, parsedCardData.link, refs.READ_URL_KEY);
-
-  //------ Логика для массива объектов с датой и новостями
-  addHaveReadNews(
-    dataFromLocaleStorage,
-    parsedCardData,
-    clickDate,
-    refs.READ_KEY
-  );
-}
-
-//========== Функция получения даты в формате 20/02/2021
-function receiveDate() {
-  const date = new Date();
-  const day = addLeadingZero(date.getDate());
-  const month = addLeadingZero(date.getMonth() + 1);
-  const year = addLeadingZero(date.getFullYear());
-  return `${day}/${month}/${year}`;
-}
-function addLeadingZero(value) {
-  return String(value).padStart(2, '0');
-}
-
-//========== Функция добавления ссылок на новости в отдельный массив в Locale Storage ============
-function addHaveReadLink(array, link, key) {
-  if (array) {
-    // если вернулся массив ссылок
-    const urlPresenceResult = array.some(item => item === link); // ищем есть ли совпадение с link результат
-
-    if (!urlPresenceResult) {
-      // если нету такого URL в массиве прочитанных новостей
-      array.push(link); //добавляем в массив URL из локального хранилища URL текущей новости
-      onSetLocaleStorageData(key, array); // сетаем в хранилище обновленный массив URL прочитанных новостей
-    }
-
-    return;
-  }
-
-  onSetLocaleStorageData(key, [link]); // если массива нет, создаем массив и помещаем туда url прочитанной новости и сетаем в Хранилище
-}
-
-//========== Функция добавления объекта прочитанных новостей согласно дате просмотра =============
-function addHaveReadNews(newsArr, cardObj, date, key) {
-  if (newsArr) {
-    // если возвращается массив дат с новостями из Локального Хранилища
-
-    const resultsArr = [];
-
-    newsArr.forEach(object => {
-      // перебираем все объекты прочитанных новостей с датами из Локального Хранилища
-      const { newsArray } = object;
-
-      const isPresent = newsArray.some(news => news.link === cardObj.link); // проверяем есть ли новость в коллекции
-      resultsArr.push(isPresent);
-    });
-
-    const isNewsPresent = resultsArr.some(result => result); // проверка присутствия новости
-
-    if (!isNewsPresent) {
-      // Если новость не присутствует в прочитанных
-      const datePresence = newsArr.some(item => item.whenRead === date); // проверяем есть ли сегодняшняя дата в массиве прочитанных
-
-      if (datePresence) {
-        // если дата уже присутствует в массиве
-        const arrWithNewObject = newsArr.map(item => {
-          // создаем новый массив перебирая массив из Локального Хранилища
-          const { whenRead, newsArray } = item;
-          if (whenRead === date) {
-            //когда совпадение по дате
-            newsArray.push(cardObj); // пушим в массив новостей объект с карточки
-            return { whenRead, newsArray };
-          }
-        });
-
-        onSetLocaleStorageData(key, arrWithNewObject); // сетаем модифицированный массив в локальное хранилище
-        return;
-      }
-
-      const whenHaveReadObject = {
-        // создаем новый объект с датой когда новость прочитана и массивом прочитанных на эту дату
-        whenRead: date,
-        newsArray: [cardObj],
-      };
-
-      newsArr.push(whenHaveReadObject); // пушим объект с новостью и датой в существующий массив из Локального Хранилища
-
-      onSetLocaleStorageData(key, newsArr); // сетаем новый массив в локальное хранилище
-    }
-
-    return;
-  }
-
-  const haveReadArray = []; // создаем массив который будем сетать в Локальное хранилище
-  const whenHaveReadObject = {
-    // создаем новый объект с датой когда новость прочитана и массивом прочитанных на эту дату
-    whenRead: date,
-    newsArray: [cardObj],
-  };
-
-  haveReadArray.push(whenHaveReadObject); // пушим в новый массив объект с датой и массивом прочитанных новостей
-
-  onSetLocaleStorageData(key, haveReadArray); // сетаем массив с прочитанными новостями и датой в Локальное Хранилище
-}
-//-----------------------------------------------------------------------------------------------------------------------------------
-
-//==================== Сервис Функции ===========================================
-
-function makeParseJson(stringData) {
-  try {
-    return JSON.parse(stringData);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-function onSetLocaleStorageData(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-function checkIfReadByUrl(array, newsLink) {
-  if (!array || array.length === 0) {
-    // проверка на null или пустой массив
-    return;
-  }
-  const compareResult = array.some(item => item === newsLink);
-  if (compareResult) {
-    return 'display: flex;';
-  } else {
-    return 'display: none;';
-  }
-}
+refs.favouriteGallery.addEventListener('click', onRemoveFromFavorites);
+refs.favouriteGallery.addEventListener('click', onReadMoreClick);
