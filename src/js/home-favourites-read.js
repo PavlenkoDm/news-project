@@ -29,7 +29,7 @@ export function onReadMoreClick(event) {
 refs.newsGallery.addEventListener('click', onAddRemoveLocaleStorageData); // вешаем слушателя событий на контейнер с новостями
 
 //=========== Функция-обработчик Клика на кнопку добавить/убрать в/из Фавориты:
-function onAddRemoveLocaleStorageData(event) {
+export function onAddRemoveLocaleStorageData(event) {
   if (!event.target.hasAttribute('data-info')) return; // проверка туда ли тырнули
 
   const parsedCardData = makeParseJson(event.target.dataset.favorite); // получаем объект данных с карточки которая находится на странице

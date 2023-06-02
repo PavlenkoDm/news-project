@@ -98,7 +98,7 @@ function onCreateMurkup(arrayOfObjects, read) {
       ${
         arrayOfObjects?.some(favouriteNews => favouriteNews.link === link)
           ? 'Remove from Favourites'
-          : 'Add to Favourite'
+          : 'Add to Favourites'
       }
       </p>
       <svg 
