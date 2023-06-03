@@ -1,14 +1,11 @@
 import { uniq } from 'lodash';
 import { refs, getNoFound, onGetLocaleStorageData } from './js/refs';
-// import { onAddRemoveLocaleStorageData } from './js/home-favourites-read';
 import './js/mobile_menu';
 
-onOpenRead(refs.READ_KEY);
-
-// refs.accordionListRef.addEventListener('click', onAddRemoveLocaleStorageData);
+refs.accordionListRef.addEventListener('click', handleFavourites);
 const favourites = onGetLocaleStorageData(refs.FAVORITES_KEY);
 
-
+onOpenRead(refs.READ_KEY);
 
 //=============== Функция при открытии страныцы "Прочитанные" ==================================
 function onOpenRead(key) {
@@ -145,3 +142,69 @@ function newsCardMurkup(array, date) {
   return card;
 }
 
+function handleFavourites(event) {
+  if (!event.target.hasAttribute("data-info")) return; // проверка туда ли тырнули
+
+  const parsedCardData = makeParseJson(event.target.dataset.favorite); // получаем объект данных с карточки которая находится на странице
+  const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY); // получаем массив объектов из Локального Хранилища
+
+
+  if (!dataFromLocaleStorage) {
+    onSetLocaleStorageData(refs.FAVORITES_KEY, [parsedCardData]);
+    changeButton(event.target, 'add')
+    return;
+  }
+
+  if (!dataFromLocaleStorage.some(news => news.link === parsedCardData.link)) {
+    onSetLocaleStorageData(refs.FAVORITES_KEY, [
+      ...dataFromLocaleStorage,
+      parsedCardData,
+    ]);
+    changeButton(event.target, 'add');
+  } else {
+    onSetLocaleStorageData(
+      refs.FAVORITES_KEY,
+      dataFromLocaleStorage.filter(news => news.link !== parsedCardData.link)
+    );
+    changeButton(event.target, 'remove');
+    onGetLocaleStorageData(refs.FAVORITES_KEY).length === 0 ? localStorage.removeItem(refs.FAVORITES_KEY) : null;
+  }
+}
+
+function changeButton(eTarget, action) {
+  if (action === 'add') {
+    eTarget.firstElementChild.textContent = 'Remove from Favourites';
+    eTarget.firstElementChild.setAttribute('style', 'pointer-events: none');
+    eTarget.lastElementChild.classList.replace(
+      'markup-unit__favorite-icon',
+      'markup-unit__favorite-icon--active'
+    );
+    eTarget.lastElementChild.setAttribute('style', 'pointer-events: none');
+  }
+
+  if (action === 'remove') {
+    eTarget.firstElementChild.textContent = 'Add to Favourites';
+    eTarget.firstElementChild.setAttribute('style', 'pointer-events: none');
+    eTarget.lastElementChild.classList.replace(
+      'markup-unit__favorite-icon--active',
+      'markup-unit__favorite-icon'
+    );
+    eTarget.lastElementChild.setAttribute('style', 'pointer-events: none');
+  }
+}
+
+function makeParseJson(stringData) {
+  try {
+    return JSON.parse(stringData);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export function onSetLocaleStorageData(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.log(error);
+  }
+}

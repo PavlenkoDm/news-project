@@ -9,7 +9,7 @@ export const refs = {
   footer: document.querySelector('.footer'), // футер
   darkText: document.querySelectorAll('.toggle-mode__dark'), // текст темного режиму відображення
   lightText: document.querySelectorAll('.toggle-mode__light'), // текст світлого режиму відображення
-  favouriteGallery: document.querySelector('.js-articles-favourites'),
+  favouriteGallery: document.querySelector(".js-articles-favourites"),
   newsGallery: document.querySelector('.articles'),
   categories: document.querySelector('.categories'),
   date: document.querySelector('#input-picker'),

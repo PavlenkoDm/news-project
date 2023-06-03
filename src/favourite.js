@@ -1,6 +1,5 @@
 import { refs, getNoFound, onGetLocaleStorageData } from './js/refs';
 import {
-  onSetLocaleStorageData,
   onReadMoreClick,
 } from './js/home-favourites-read';
 import './js/mobile_menu';
@@ -8,7 +7,10 @@ import './js/mobile_menu';
 // export const formEl = document.querySelector('.toggle-mode');
 // formEl.addEventListener('submit', onInputSubmit);
 
+refs.favouriteGallery.addEventListener('click', onRemoveFromFavorites);
+
 onOpenFavorites(refs.FAVORITES_KEY);
+
 
 //=============== Функция при открытии страныцы "Фавориты":
 function onOpenFavorites(key) {
@@ -23,42 +25,17 @@ function onOpenFavorites(key) {
   onCreateMurkup(dataFromLocaleStorage, currentRead);
 }
 
-//============= Функция удаления элементов из ДОМ:
-function onRemoveElement(element) {
-  element.remove();
-}
 //============= Функция-обработчик удаления из Фаворитов:
 function onRemoveFromFavorites(event) {
-  if (!event.target.hasAttribute('data-info')) return;
+  if (!event.target.hasAttribute("data-info")) return;
+
+  const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY);
 
   const card = event.target.closest('.markup-unit');
 
-  const cardIDLink = event.target.dataset.id; // получаем ID карточки в виде линка на первоисточник
+  card.remove();
 
-  const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY); // получаем массив из Локального хранилища
-
-  if (!dataFromLocaleStorage) {
-    return;
-  }
-
-  const index = dataFromLocaleStorage.find((card, index) => {
-    // получаем индекс нужной карточки
-    if (card.link === cardIDLink) {
-      return index;
-    }
-  });
-
-  dataFromLocaleStorage.splice(index, 1); // удаляем карточку по индексу
-
-  if (dataFromLocaleStorage.length === 0) {
-    localStorage.removeItem(refs.FAVORITES_KEY);
-    onRemoveElement(card);
-    return;
-  }
-  
-  onSetLocaleStorageData(refs.FAVORITES_KEY, dataFromLocaleStorage); // сетаем в локальное хранилище модифицированный массив
-
-  onRemoveElement(card);
+  if (!dataFromLocaleStorage) getNoFound(refs.favouriteGallery);;
 }
 
 //============= Функция для рендера страницы:
@@ -153,5 +130,5 @@ function onCreateMurkup(arrayOfObjects, read) {
   return (refs.favouriteGallery.innerHTML = favoritesMurkup);
 }
 
-refs.favouriteGallery.addEventListener('click', onRemoveFromFavorites);
+
 refs.favouriteGallery.addEventListener('click', onReadMoreClick);
