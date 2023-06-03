@@ -30,8 +30,8 @@ refs.newsGallery.addEventListener('click', onAddRemoveLocaleStorageData); // в�
 
 //=========== Функция-обработчик Клика на кнопку добавить/убрать в/из Фавориты:
 export function onAddRemoveLocaleStorageData(event) {
-  if (!event.target.hasAttribute('data-info')) return; // проверка туда ли тырнули
-
+  if (!event.target.hasAttribute("data-info")) return; // проверка туда ли тырнули
+  
   const parsedCardData = makeParseJson(event.target.dataset.favorite); // получаем объект данных с карточки которая находится на странице
   const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY); // получаем массив объектов из Локального Хранилища
 

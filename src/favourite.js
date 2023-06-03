@@ -1,5 +1,8 @@
-import { receiveDate, addLeadingZero, makeParseJson, onSetLocaleStorageData, onReadMoreClick } from './js/home-favourites-read';
 import { refs, getNoFound, onGetLocaleStorageData } from './js/refs';
+import {
+  onSetLocaleStorageData,
+  onReadMoreClick,
+} from './js/home-favourites-read';
 import './js/mobile_menu';
 // import { onInputSubmit } from './js/themeSwitcher';
 // export const formEl = document.querySelector('.toggle-mode');
@@ -52,7 +55,7 @@ function onRemoveFromFavorites(event) {
     onRemoveElement(card);
     return;
   }
-
+  
   onSetLocaleStorageData(refs.FAVORITES_KEY, dataFromLocaleStorage); // сетаем в локальное хранилище модифицированный массив
 
   onRemoveElement(card);
@@ -74,15 +77,16 @@ function onCreateMurkup(arrayOfObjects, read) {
         src="${imageURL}" 
         alt="placeholder"
         />
-        ${read?.some(readNews => readNews.link === link)
-              ? `<p class="markup-unit__already-read">
+        ${
+          read?.some(readNews => readNews.link === link)
+            ? `<p class="markup-unit__already-read">
                   Already read
                   <svg class="markup-unit__icon-check" width="18" height="18" viewBox="0 0 37 32">
                     <path stroke="#00DD73" stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="4" stroke-width="2.2857" d="M28.779 6.389c-0.288 0.009-0.546 0.131-0.732 0.323l-16.313 16.313-6.713-6.713c-0.195-0.209-0.473-0.339-0.78-0.339-0.589 0-1.067 0.478-1.067 1.067 0 0.308 0.13 0.585 0.339 0.78l0.001 0.001 7.467 7.467c0.193 0.193 0.459 0.312 0.754 0.312s0.561-0.119 0.754-0.312v0l17.067-17.067c0.199-0.194 0.323-0.465 0.323-0.765 0-0.589-0.478-1.067-1.067-1.067-0.011 0-0.022 0-0.033 0l0.002-0z"></path>
                   </svg>
             </p>`
-              : ''
-      }
+            : ''
+        }
     <button 
         class="markup-unit__add-favorite js-fbutton js-favorites" 
         type="button" 
@@ -104,9 +108,7 @@ function onCreateMurkup(arrayOfObjects, read) {
       <svg 
           data-favorite='${favorite}'  
           class="${
-            arrayOfObjects?.some(
-              favouriteNews => favouriteNews.link === link
-            )
+            arrayOfObjects?.some(favouriteNews => favouriteNews.link === link)
               ? 'markup-unit__favorite-icon--active js-fbutton'
               : 'markup-unit__favorite-icon'
           }" 
@@ -150,7 +152,6 @@ function onCreateMurkup(arrayOfObjects, read) {
 
   return (refs.favouriteGallery.innerHTML = favoritesMurkup);
 }
-
 
 refs.favouriteGallery.addEventListener('click', onRemoveFromFavorites);
 refs.favouriteGallery.addEventListener('click', onReadMoreClick);

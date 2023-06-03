@@ -1,13 +1,14 @@
 import { uniq } from 'lodash';
 import { refs, getNoFound, onGetLocaleStorageData } from './js/refs';
-import { onAddRemoveLocaleStorageData } from './js/home-favourites-read';
+// import { onAddRemoveLocaleStorageData } from './js/home-favourites-read';
 import './js/mobile_menu';
 
+onOpenRead(refs.READ_KEY);
+
+// refs.accordionListRef.addEventListener('click', onAddRemoveLocaleStorageData);
 const favourites = onGetLocaleStorageData(refs.FAVORITES_KEY);
 
-refs.accordionListRef.addEventListener('click', onAddRemoveLocaleStorageData); // делегируем слушание на секцию аккордиона
 
-onOpenRead(refs.READ_KEY);
 
 //=============== Функция при открытии страныцы "Прочитанные" ==================================
 function onOpenRead(key) {
@@ -144,4 +145,3 @@ function newsCardMurkup(array, date) {
   return card;
 }
 
-refs.accordionListRef.addEventListener('click', onAddRemoveLocaleStorageData);
