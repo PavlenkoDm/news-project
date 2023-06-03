@@ -4,7 +4,6 @@ refs.newsGallery.addEventListener('click', onReadMoreClick);
 
 //============== Функция обработчик по клику на ссылку ReadMore:
 export function onReadMoreClick(event) {
-  event.preventDefault();
   if (!event.target.classList.contains('markup-unit__global-link')) return;
 
   const clickDate = receiveDate(); // получаем дату клика в виде 20/02/2023
@@ -31,7 +30,7 @@ refs.newsGallery.addEventListener('click', onAddRemoveLocaleStorageData); // в�
 //=========== Функция-обработчик Клика на кнопку добавить/убрать в/из Фавориты:
 export function onAddRemoveLocaleStorageData(event) {
   if (!event.target.hasAttribute("data-info")) return; // проверка туда ли тырнули
-  
+
   const parsedCardData = makeParseJson(event.target.dataset.favorite); // получаем объект данных с карточки которая находится на странице
   const dataFromLocaleStorage = onGetLocaleStorageData(refs.FAVORITES_KEY); // получаем массив объектов из Локального Хранилища
 
